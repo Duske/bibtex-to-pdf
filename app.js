@@ -32,7 +32,7 @@ bibtext = bibparse(bibtext);
 fs.appendFile('error-log.txt', 'These URLs caused errors \n', function (err) {
 
 });
-function readUrlsAndAuthor(bibtextObject) {
+function returnUrlsAndAuthor(bibtextObject) {
   if(!bibtextObject) {
     return false;
   }
@@ -73,17 +73,8 @@ function writePdf(bibObject) {
       }
     });
 }
-// var urls = [
-// 	{
-// 		title: 'google',
-// 		url: 'http://google.com/'
-// 	},
-// 	{
-// 		title: 'apple',
-// 		url: 'http://apple.com/'
-// 	}
-// ];
-var urls = readUrlsAndAuthor(bibtext);
+
+var urls = returnUrlsAndAuthor(bibtext);
 for (var i = 0; i < 20; i++) {
   if((urls[i].url.split('.pdf')).length > 1) {
     fs.appendFile('error-log.txt', "Fehler aufgetreten bei "+urls[i].title+".pdf, "+urls[i].url+"\n", function (err) {
