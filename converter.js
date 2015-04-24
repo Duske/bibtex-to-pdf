@@ -30,16 +30,16 @@ function cleanSlashes(text) {
   return text.replace(/\//g, "-");
 }
 
-function composeFileName(nameParts, filetype) {
-  return (cleanSlashes(nameParts.reduce(function(prev, current) {
-    return prev+'-'+current;
-  })
-  +'.'+filetype));
-}
-
 
 module.exports = {
 
+  composeFileName: function(nameParts, filetype) {
+    return (cleanSlashes(nameParts.reduce(function(prev, current) {
+      return prev+'-'+current;
+    })
+    +'.'+filetype));
+  },
+  
   convertBibtexJsonToPdf: function(urls) {
     var workCount = 0;
     var max = urls.length;
