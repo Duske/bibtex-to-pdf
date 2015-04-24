@@ -7,7 +7,6 @@ Feel free to contribute!
 ```
 npm install
 
-
 ```
 Please make sure that you have **wkhtmltopdf** installed. The easiest way to do this is to
 [download](http://wkhtmltopdf.org/downloads.html#stable) a prebuilt version for your system.

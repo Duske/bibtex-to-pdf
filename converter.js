@@ -1,14 +1,14 @@
-var fs = require('fs');
 var wkhtmltopdf = require('wkhtmltopdf');
 var Q = require('q');
 var http = require('http');
 var fs = require('fs');
 
+var filePath = 'pdf/';
 function writePdf(url, filename) {
   var deferred = Q.defer();
   wkhtmltopdf(url,
     {
-      output: 'pdf/'+filename,
+      output: filePath+filename,
       javascriptDelay: 2000
     },
     function (code, signal) {
@@ -22,8 +22,8 @@ function writePdf(url, filename) {
     return deferred.promise;
 }
 
-function isDownloadableContent(url) {
-  return !(url.split('.pdf').length > 1);
+function isPdfFile(url) {
+  return (url.split('.pdf').length > 1);
 }
 
 function cleanSlashes(text) {
@@ -46,10 +46,10 @@ module.exports = {
     var file;
     var tempFileName;
     for (var i = 0; i < max; i++) {
-      if(!isDownloadableContent(urls[i].url)) {
+      if(isPdfFile(urls[i].url)) {
         workCount++;
-        tempFileName = 'pdf/' + composeFileName([urls[i].author, urls[i].title], 'pdf');
-        file = fs.createWriteStream(tempFileName);
+        tempFileName = composeFileName([urls[i].author, urls[i].title], 'pdf');
+        file = fs.createWriteStream(filePath+tempFileName);
         var request = http.get(urls[i].url, function(response) {
           response.pipe(file);
           file.on('finish', function() {
@@ -57,9 +57,9 @@ module.exports = {
               console.log("Successfully downloaded "+tempFileName);
             });
           });
-        }).on('error', function(err) { // Handle errors
-          fs.unlink(tempFileName); // Delete the file async. (But we don't check the result)
-          console.log("An error occured with "+tempFileName);
+        }).on('error', function(err) {
+          fs.unlink(tempFileName);
+          console.log("An error occured with "+tempFileName+'\n'+err);
         });
       }
       else {

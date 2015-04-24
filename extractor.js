@@ -6,10 +6,11 @@ module.exports = {
     if(!bibtextObject) {
       return false;
     }
-    var urls = [];
+    var urls = [],
+      sourceitem;
     for (var key in bibtextObject) {
        if (bibtextObject.hasOwnProperty(key)) {
-          var sourceitem = bibtextObject[key];
+          sourceitem = bibtextObject[key];
           for (var prop in sourceitem) {
              if (sourceitem.hasOwnProperty(prop)) {
                 if (prop === "URL") {
