@@ -4,9 +4,9 @@ var path = require('path');
 var pkg = require( path.join(__dirname, 'package.json') );
 
 var fs = require('fs');
-var bibparse = require("bibtex-parser");
-var extractor = require("./extractor");
-var converter = require("./converter");
+var bibparse = require('bibtex-parser');
+var extractor = require('./extractor');
+var converter = require('./converter');
 
 // Parse command line options
 var program = require('commander');
@@ -15,7 +15,9 @@ program
   .option('-p, --path <path>', 'Path for bibtex file')
   .parse(process.argv);
 
-if (program.path) console.log('  - path ' + program.path);
+if (program.path) {
+  console.log('  - path ' + program.path);
+}
 //defaults
 var bibFile = program.path || 'library.bib';
 

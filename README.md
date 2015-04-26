@@ -1,6 +1,6 @@
 #bibtex-to-pdf
 
-This program fetches all your urls a bibtex library and converts them via **wkhtmltopdf** to pdf files.
+This little console application gathers all sources with a url from a bibtex library and converts them via **wkhtmltopdf** to pdf files.
 Feel free to contribute!
 
 ##Installation##
@@ -26,3 +26,4 @@ npm start -path /path/to/my/bibtexlib/library.lib
 ##TODO##
 * Accept cli args for settings
 * More sophisticated parsing
+* Improve test cases

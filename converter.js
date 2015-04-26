@@ -48,7 +48,7 @@ module.exports = {
     for (var i = 0; i < max; i++) {
       if(isPdfFile(urls[i].url)) {
         workCount++;
-        tempFileName = composeFileName([urls[i].author, urls[i].title], 'pdf');
+        tempFileName = this.composeFileName([urls[i].author, urls[i].title], 'pdf');
         file = fs.createWriteStream(filePath+tempFileName);
         var request = http.get(urls[i].url, function(response) {
           response.pipe(file);
@@ -63,7 +63,7 @@ module.exports = {
         });
       }
       else {
-        writePdf(urls[i].url, composeFileName([urls[i].author, urls[i].title], 'pdf'))
+        writePdf(urls[i].url, this.composeFileName([urls[i].author, urls[i].title], 'pdf'))
         .then(function(filename) {
           console.log('Successfully downloaded ' + filename);
         })
