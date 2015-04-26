@@ -1,4 +1,4 @@
-#bibtex-to-pdf
+#bibtex-to-pdf [![Build Status](https://travis-ci.org/Duske/bibtex-to-pdf.svg?branch=master)](https://travis-ci.org/Duske/bibtex-to-pdf)
 
 This little console application gathers all sources with a url from a bibtex library and converts them via **wkhtmltopdf** to pdf files.
 Feel free to contribute!
