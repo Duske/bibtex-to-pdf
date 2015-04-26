@@ -25,5 +25,6 @@ node app.js -path /path/to/my/bibtexlib/library.lib
 
 ##TODO##
 * Accept cli args for settings
+* Add configurable destination path
 * More sophisticated parsing
 * Improve test cases

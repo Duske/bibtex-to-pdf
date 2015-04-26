@@ -18,6 +18,13 @@ program
 if (program.path) {
   console.log('  - path ' + program.path);
 }
+try {
+  fs.mkdirSync('pdf/');
+} catch(e) {
+  if ( e.code != 'EEXIST' ) {
+    throw e;
+  }
+}
 //defaults
 var bibFile = program.path || 'library.bib';
 
