@@ -4,7 +4,7 @@
   "description": "bibtex to pdf converter",
   "main": "app.js",
   "scripts": {
-    "test": "test",
+    "test": "node_modules/.bin/_mocha",
     "start": "node app.js"
   },
   "keywords": [
@@ -17,9 +17,12 @@
   "license": "MIT",
   "dependencies": {
     "bibtex-parser": "0.0.0",
+    "chai": "^2.2.0",
     "commander": "^2.7.1",
+    "mocha": "^2.2.4",
     "path": "^0.11.14",
     "q": "^1.2.0",
+    "valid-url": "^1.0.9",
     "wkhtmltopdf": "^0.1.5"
   }
 }

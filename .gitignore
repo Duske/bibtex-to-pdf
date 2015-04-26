@@ -2,3 +2,5 @@ node_modules/
 *.bib
 error-log.txt
 pdf
+.idea
+npm-debug.log
