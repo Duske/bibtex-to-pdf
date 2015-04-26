@@ -17,10 +17,10 @@ npm start
 ```
 
 ###Options###
-* path to bibtex file
+* path to bibtex file, **default** is the local application directory
 
 ```
-npm start -path /path/to/my/bibtexlib/library.lib
+node app.js -path /path/to/my/bibtexlib/library.lib
 ```
 
 ##TODO##
