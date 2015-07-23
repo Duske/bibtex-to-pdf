@@ -1,10 +1,10 @@
 'use strict';
 var wkhtmltopdf = require('wkhtmltopdf');
 var Q = require('q');
-var http = require('http');
 var fs = require('fs');
-
+var request = require('request');
 var filePath = 'pdf/';
+
 function writePdf(url, filename) {
   var deferred = Q.defer();
   wkhtmltopdf(url,
@@ -31,6 +31,25 @@ function cleanSlashes(text) {
   return text.replace(/\//g, '-');
 }
 
+function downloadFile(url, filename) {
+  var deferred = Q.defer();
+  var file = fs.createWriteStream(filePath + filename);
+  request
+    .get(url)
+    .on('response', function(response) {
+      response.pipe(file);
+      file.on('finish', function() {
+        file.close(function() {
+          deferred.resolve(filename);
+        });
+      });
+    })
+    .on('error', function(err) {
+      fs.unlink(filename);
+      deferred.reject(err, filename);
+    });
+  return deferred.promise;
+}
 
 module.exports = {
 
@@ -39,39 +58,36 @@ module.exports = {
       return prev + '-' + current;
     }) + '.' + filetype));
   },
-  
+
   convertBibtexJsonToPdf: function(urls) {
     var workCount = 0;
     var max = urls.length;
-    var file;
     var tempFileName;
     for (var i = 0; i < max; i++) {
+      tempFileName = this.composeFileName([urls[i].author, urls[i].title], 'pdf');
       if(isPdfFile(urls[i].url)) {
-        workCount++;
-        tempFileName = this.composeFileName([urls[i].author, urls[i].title], 'pdf');
-        file = fs.createWriteStream(filePath+tempFileName);
-        var request = http.get(urls[i].url, function(response) {
-          response.pipe(file);
-          file.on('finish', function() {
-            file.close(function() {
-              console.log('Successfully downloaded ' + tempFileName);
-            });
-          });
-        }).on('error', function(err) {
-          fs.unlink(tempFileName);
-          console.log('An error occured with ' + tempFileName + '\n' + err);
-        });
-      }
-      else {
-        writePdf(urls[i].url, this.composeFileName([urls[i].author, urls[i].title], 'pdf'))
+        downloadFile(urls[i].url, tempFileName)
         .then(function(filename) {
           console.log('Successfully downloaded ' + filename);
         })
         .catch(function(error, filename) {
           console.log(error.message);
-          fs.appendFile('error-log.txt', 'An error occured with resource ' + filename + '\n', function (err) {
-
+          fs.appendFile('error-log.txt', 'An error occured while downloading resource ' + filename + '\n', function () {
           });
+        })
+        .finally(function() {
+          workCount++;
+          console.log(workCount + '/' + max + ' done.');
+        });
+      }
+      else {
+        writePdf(urls[i].url, tempFileName)
+        .then(function(filename) {
+          console.log('Successfully downloaded and converted' + filename);
+        })
+        .catch(function(error, filename) {
+          console.log(error.message);
+          fs.appendFile('error-log.txt', 'An error occured with converting resource ' + filename + '\n');
         })
         .finally(function() {
           workCount++;
