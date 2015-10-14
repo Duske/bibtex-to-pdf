@@ -1,26 +1,26 @@
 'use strict';
 var wkhtmltopdf = require('wkhtmltopdf');
-var Q = require('q');
-var http = require('http');
-var fs = require('fs');
-
+var Promise = require("bluebird");
+var fs = Promise.promisifyAll(require('fs'));
+var request = require('request');
 var filePath = 'pdf/';
+
 function writePdf(url, filename) {
-  var deferred = Q.defer();
-  wkhtmltopdf(url,
-    {
-      output: filePath + filename,
-      javascriptDelay: 2000
-    },
-    function (code, signal) {
-      //Ignore code QFont::setPixelSize: Pixel size <= 0 (0)
-      if(signal !== 0 && code && code.message !== 'QFont::setPixelSize: Pixel size <= 0 (0)') {
-        deferred.reject(code, filename);
-      } else {
-        deferred.resolve(filename);
-      }
-    });
-    return deferred.promise;
+  return new Promise(function(resolve, reject) {
+    wkhtmltopdf(url,
+      {
+        output: filePath + filename,
+        javascriptDelay: 2000
+      },
+      function (code, signal) {
+        //Ignore code QFont::setPixelSize: Pixel size <= 0 (0)
+        if(signal !== 0 && code && code.message !== 'QFont::setPixelSize: Pixel size <= 0 (0)') {
+          reject(code);
+        } else {
+          resolve(filename);
+        }
+      });
+  });
 }
 
 function isPdfFile(url) {
@@ -31,6 +31,15 @@ function cleanSlashes(text) {
   return text.replace(/\//g, '-');
 }
 
+function downloadFile(url, filename) {
+  return new Promise(function(resolve) {
+    request(url)
+      .pipe(fs.createWriteStream(filePath + filename))
+      .on('finish', function() {
+        resolve(filename);
+      });
+  });
+}
 
 module.exports = {
 
@@ -39,39 +48,36 @@ module.exports = {
       return prev + '-' + current;
     }) + '.' + filetype));
   },
-  
+
   convertBibtexJsonToPdf: function(urls) {
     var workCount = 0;
     var max = urls.length;
-    var file;
     var tempFileName;
     for (var i = 0; i < max; i++) {
+      tempFileName = this.composeFileName([urls[i].author, urls[i].title], 'pdf');
       if(isPdfFile(urls[i].url)) {
-        workCount++;
-        tempFileName = this.composeFileName([urls[i].author, urls[i].title], 'pdf');
-        file = fs.createWriteStream(filePath+tempFileName);
-        var request = http.get(urls[i].url, function(response) {
-          response.pipe(file);
-          file.on('finish', function() {
-            file.close(function() {
-              console.log('Successfully downloaded ' + tempFileName);
-            });
-          });
-        }).on('error', function(err) {
-          fs.unlink(tempFileName);
-          console.log('An error occured with ' + tempFileName + '\n' + err);
-        });
-      }
-      else {
-        writePdf(urls[i].url, this.composeFileName([urls[i].author, urls[i].title], 'pdf'))
+        downloadFile(urls[i].url, tempFileName)
         .then(function(filename) {
-          console.log('Successfully downloaded ' + filename);
+          console.log('Successfully downloaded pdf ' + filename);
         })
         .catch(function(error, filename) {
           console.log(error.message);
-          fs.appendFile('error-log.txt', 'An error occured with resource ' + filename + '\n', function (err) {
-
+          fs.appendFile('error-log.txt', 'An error occured while downloading resource ' + filename + '\n', function () {
           });
+        })
+        .finally(function() {
+          workCount++;
+          console.log(workCount + '/' + max + ' done.');
+        });
+      }
+      else {
+        writePdf(urls[i].url, tempFileName)
+        .then(function(filename) {
+          console.log('Successfully downloaded and converted' + filename);
+        })
+        .catch(function(error, filename) {
+          console.log(error.message);
+          fs.appendFile('error-log.txt', 'An error occured with converting resource ' + filename + '\n');
         })
         .finally(function() {
           workCount++;
