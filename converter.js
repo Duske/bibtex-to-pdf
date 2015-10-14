@@ -1,26 +1,26 @@
 'use strict';
 var wkhtmltopdf = require('wkhtmltopdf');
-var Q = require('q');
-var fs = require('fs');
+var Promise = require("bluebird");
+var fs = Promise.promisifyAll(require('fs'));
 var request = require('request');
 var filePath = 'pdf/';
 
 function writePdf(url, filename) {
-  var deferred = Q.defer();
-  wkhtmltopdf(url,
-    {
-      output: filePath + filename,
-      javascriptDelay: 2000
-    },
-    function (code, signal) {
-      //Ignore code QFont::setPixelSize: Pixel size <= 0 (0)
-      if(signal !== 0 && code && code.message !== 'QFont::setPixelSize: Pixel size <= 0 (0)') {
-        deferred.reject(code, filename);
-      } else {
-        deferred.resolve(filename);
-      }
-    });
-    return deferred.promise;
+  return new Promise(function(resolve, reject) {
+    wkhtmltopdf(url,
+      {
+        output: filePath + filename,
+        javascriptDelay: 2000
+      },
+      function (code, signal) {
+        //Ignore code QFont::setPixelSize: Pixel size <= 0 (0)
+        if(signal !== 0 && code && code.message !== 'QFont::setPixelSize: Pixel size <= 0 (0)') {
+          reject(code);
+        } else {
+          resolve(filename);
+        }
+      });
+  });
 }
 
 function isPdfFile(url) {
@@ -32,23 +32,13 @@ function cleanSlashes(text) {
 }
 
 function downloadFile(url, filename) {
-  var deferred = Q.defer();
-  var file = fs.createWriteStream(filePath + filename);
-  request
-    .get(url)
-    .on('response', function(response) {
-      response.pipe(file);
-      file.on('finish', function() {
-        file.close(function() {
-          deferred.resolve(filename);
-        });
+  return new Promise(function(resolve) {
+    request(url)
+      .pipe(fs.createWriteStream(filePath + filename))
+      .on('finish', function() {
+        resolve(filename);
       });
-    })
-    .on('error', function(err) {
-      fs.unlink(filename);
-      deferred.reject(err, filename);
-    });
-  return deferred.promise;
+  });
 }
 
 module.exports = {
@@ -68,7 +58,7 @@ module.exports = {
       if(isPdfFile(urls[i].url)) {
         downloadFile(urls[i].url, tempFileName)
         .then(function(filename) {
-          console.log('Successfully downloaded ' + filename);
+          console.log('Successfully downloaded pdf ' + filename);
         })
         .catch(function(error, filename) {
           console.log(error.message);
