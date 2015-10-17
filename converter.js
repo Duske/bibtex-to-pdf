@@ -3,6 +3,7 @@ var wkhtmltopdf = require('wkhtmltopdf');
 var Promise = require("bluebird");
 var fs = Promise.promisifyAll(require('fs'));
 var request = require('request');
+var filenameUtility = require('./filename-utility');
 var filePath = 'pdf/';
 
 function writePdf(url, filename) {
@@ -23,14 +24,6 @@ function writePdf(url, filename) {
   });
 }
 
-function isPdfFile(url) {
-  return (url.split('.pdf').length > 1);
-}
-
-function cleanSlashes(text) {
-  return text.replace(/\//g, '-');
-}
-
 function downloadFile(url, filename) {
   return new Promise(function(resolve) {
     request(url)
@@ -43,47 +36,29 @@ function downloadFile(url, filename) {
 
 module.exports = {
 
-  composeFileName: function(nameParts, filetype) {
-    return (cleanSlashes(nameParts.reduce(function(prev, current) {
-      return prev + '-' + current;
-    }) + '.' + filetype));
-  },
-
-  convertBibtexJsonToPdf: function(urls) {
-    var workCount = 0;
-    var max = urls.length;
+  convertBibtexJsonToPdf: function(urlItems) {
     var tempFileName;
-    for (var i = 0; i < max; i++) {
-      tempFileName = this.composeFileName([urls[i].author, urls[i].title], 'pdf');
-      if(isPdfFile(urls[i].url)) {
-        downloadFile(urls[i].url, tempFileName)
-        .then(function(filename) {
-          console.log('Successfully downloaded pdf ' + filename);
-        })
-        .catch(function(error, filename) {
-          console.log(error.message);
-          fs.appendFile('error-log.txt', 'An error occured while downloading resource ' + filename + '\n', function () {
-          });
-        })
-        .finally(function() {
-          workCount++;
-          console.log(workCount + '/' + max + ' done.');
-        });
+    var that = this;
+    console.log('Start converting, this may take some time ...');
+
+    var operations = urlItems.map(function(url, index) {
+      tempFileName = filenameUtility.composeFileName([urlItems[index].author, urlItems[index].title], 'pdf');
+      console.log('Processing item %s out of %s', (index + 1), urlItems.length);
+      if(filenameUtility.isPdfFile(urlItems[index].url)) {
+        console.log('Start downloading ' + urlItems[index].title);
+        return downloadFile(urlItems[index].url, tempFileName);
+      } else {
+        console.log('Start converting ' + urlItems[index].title)
+        return writePdf(urlItems[index].url, tempFileName);
       }
-      else {
-        writePdf(urls[i].url, tempFileName)
-        .then(function(filename) {
-          console.log('Successfully downloaded and converted' + filename);
-        })
-        .catch(function(error, filename) {
-          console.log(error.message);
-          fs.appendFile('error-log.txt', 'An error occured with converting resource ' + filename + '\n');
-        })
-        .finally(function() {
-          workCount++;
-          console.log(workCount + '/' + max + ' done.');
-        });
-      }
-    }
+    });
+
+    Promise.all(operations)
+      .then(function() {
+        console.log('Successfully processed all items');
+      })
+      .catch(function() {
+        console.log('There have been errors, please see error-log.txt');
+      });
   }
 };

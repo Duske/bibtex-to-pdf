@@ -33,7 +33,12 @@ var bibtext = fs.readFileSync(bibFile, 'utf8');
 bibtext = bibparse(bibtext);
 
 //Extracted source item list
-var urls = extractor.getExtractedSourceList(bibtext);
+try {
+  var urlItems = extractor.getExtractedSourceList(bibtext);
+} catch (e) {
+  console.log('There has been an error with your bib file, please check Syntax and URI spelling');
+}
+
 
 //Start conversion
-converter.convertBibtexJsonToPdf(urls);
+converter.convertBibtexJsonToPdf(urlItems);

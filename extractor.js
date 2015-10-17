@@ -15,8 +15,8 @@ module.exports = {
           for (var prop in sourceitem) {
              if (sourceitem.hasOwnProperty(prop) && prop === 'URL') {
                 if (!validUrl.is_web_uri(encodeURI(sourceitem[prop]))) {
-                  console.log('Invalid URL at item ' + sourceitem[prop]);
-                  break;
+                  console.log(sourceitem[prop] +' is not a valid URL!! \n');
+                  throw new Error(sourceitem[prop] +' is not a valid URL');
                 }
                 urls.push({
                   url: sourceitem[prop],
