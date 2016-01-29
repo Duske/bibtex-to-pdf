@@ -1,11 +1,16 @@
-var wkhtmltopdfRaw = require('wkhtmltopdf');
-var Promise = require('bluebird');
-var fs = Promise.promisifyAll(require('fs'));
-var path = require('path');
-var request = require('request-promise');
-var filenameUtility = require('./filename-utility');
+const wkhtmltopdfRaw = require('wkhtmltopdf');
+const Promise = require('bluebird');
+const fs = Promise.promisifyAll(require('fs'));
+const path = require('path');
+const request = require('request-promise');
+const filenameUtility = require('./filename-utility');
+const chalk = require('chalk');
 const filePath = 'pdf/';
 const wkhtmltopdf = Promise.promisify(wkhtmltopdfRaw);
+
+const errorMessage = chalk.bold.white.bgRed;
+const infoMessage = chalk.blue.bgWhite;
+const successMessage = chalk.black.bold.bgGreen;
 
 function convertWebpageToPdf(url, filename) {
   const output = path.resolve(filePath, filename);
@@ -17,7 +22,7 @@ function convertWebpageToPdf(url, filename) {
     return output;
   })
   .catch(function(error) {
-    console.log(`An error occured while converting URL ${url}`);
+    console.log(errorMessage(`An error occured while converting URL ${url}`));
     throw Error(error);
   });
 }
@@ -34,7 +39,7 @@ function downloadFile(url, filename) {
     console.log(`Successfully downloaded file ${url}`);
   })
   .catch(function (error) {
-    console.log(`An error occured while downloading or writing URL ${url}`);
+    console.log(errorMessage(`An error occured while downloading or writing URL ${url}`));
     throw Error(error);
   });
 }
@@ -44,11 +49,11 @@ module.exports = {
   convertBibtexJsonToPdf: function(urlItems) {
     var tempFileName;
     var that = this;
-    console.log('Start converting, this may take some time ...');
+    console.log(infoMessage('Start converting, this may take some time ...'));
 
     var operations = urlItems.map(function(url, index) {
       tempFileName = filenameUtility.composeFileName([urlItems[index].author, urlItems[index].title], 'pdf');
-      console.log('Processing item %s out of %s', (index + 1), urlItems.length);
+      console.log(infoMessage('Processing item %s out of %s'), index + 1, urlItems.length);
       if(filenameUtility.isPdfFile(urlItems[index].url)) {
         console.log('Start downloading ' + urlItems[index].title);
         return downloadFile(urlItems[index].url, tempFileName);
@@ -63,10 +68,10 @@ module.exports = {
 
     Promise.all(operations)
       .then(function() {
-        console.log('Successfully processed all items');
+        console.log(successMessage('Successfully processed all items'));
       })
       .catch(function(error) {
-        console.log(error);
+        console.log(errorMessage(error));
       });
   }
 };

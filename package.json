@@ -20,6 +20,7 @@
     "bibtex-parser": "0.0.0",
     "bluebird": "^2.10.2",
     "chai": "^2.2.0",
+    "chalk": "^1.1.1",
     "commander": "^2.7.1",
     "mocha": "^2.2.4",
     "path": "^0.11.14",
