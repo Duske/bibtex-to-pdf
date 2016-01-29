@@ -20,11 +20,15 @@
     "bibtex-parser": "0.0.0",
     "bluebird": "^2.10.2",
     "chai": "^2.2.0",
+    "chalk": "^1.1.1",
     "commander": "^2.7.1",
     "mocha": "^2.2.4",
     "path": "^0.11.14",
-    "request": "^2.60.0",
+    "request-promise": "^2.0.0",
     "valid-url": "^1.0.9",
     "wkhtmltopdf": "^0.1.5"
+  },
+  "devDependencies": {
+    "eslint": "^1.10.3"
   }
 }

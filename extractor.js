@@ -1,4 +1,3 @@
-'use strict';
 var validUrl = require('valid-url');
 
 module.exports = {
