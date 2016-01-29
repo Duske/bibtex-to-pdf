@@ -1,10 +1,9 @@
-'use strict';
 var wkhtmltopdf = require('wkhtmltopdf');
-var Promise = require("bluebird");
+var Promise = require('bluebird');
 var fs = Promise.promisifyAll(require('fs'));
 var request = require('request');
 var filenameUtility = require('./filename-utility');
-var filePath = 'pdf/';
+const filePath = 'pdf/';
 
 function writePdf(url, filename) {
   return new Promise(function(resolve, reject) {

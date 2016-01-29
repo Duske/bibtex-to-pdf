@@ -1,4 +1,3 @@
-'use strict';
 function isPdfFile(url) {
   return (url.split('.pdf').length > 1);
 }

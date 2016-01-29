@@ -26,5 +26,8 @@
     "request": "^2.60.0",
     "valid-url": "^1.0.9",
     "wkhtmltopdf": "^0.1.5"
+  },
+  "devDependencies": {
+    "eslint": "^1.10.3"
   }
 }
