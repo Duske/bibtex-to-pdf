@@ -2,7 +2,7 @@ var wkhtmltopdfRaw = require('wkhtmltopdf');
 var Promise = require('bluebird');
 var fs = Promise.promisifyAll(require('fs'));
 var path = require('path');
-var request = require('request');
+var request = require('request-promise');
 var filenameUtility = require('./filename-utility');
 const filePath = 'pdf/';
 const wkhtmltopdf = Promise.promisify(wkhtmltopdfRaw);
@@ -23,15 +23,19 @@ function convertWebpageToPdf(url, filename) {
 }
 
 function downloadFile(url, filename) {
-  // return request(url, {
-  //   encoding: null
-  // }).then
-  return new Promise(function(resolve) {
-    request(url)
-      .pipe(fs.createWriteStream(filePath + filename))
-      .on('finish', function() {
-        resolve(filename);
-      });
+  const output = path.resolve(filePath, filename);
+  return request(url, {
+    encoding: null
+  })
+  .then(function(buffer) {
+    return fs.writeFile(output, buffer);
+  })
+  .then(function() {
+    console.log(`Successfully downloaded file ${url}`);
+  })
+  .catch(function (error) {
+    console.log(`An error occured while downloading or writing URL ${url}`);
+    throw Error(error);
   });
 }
 
@@ -62,7 +66,6 @@ module.exports = {
         console.log('Successfully processed all items');
       })
       .catch(function(error) {
-        console.log('There have been errors, please see error-log.txt');
         console.log(error);
       });
   }
