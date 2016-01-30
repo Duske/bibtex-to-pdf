@@ -25,6 +25,7 @@ function convertWebpageToPdf(url, filename) {
     javascriptDelay: 2000
   })
   .then(function() {
+    console.log(`Successfully downloaded and converted file ${url}`);
     return output;
   })
   .catch(function(error) {
@@ -51,9 +52,21 @@ function downloadFile(url, filename) {
     console.log(`Successfully downloaded file ${url}`);
   })
   .catch(function (error) {
-    console.log(errorMessage(`An error occured while downloading or writing URL ${url}`));
+    console.log(errorMessage(`An error occured while downloading or writing URL ${url}, ${error}`));
     throw Error(error);
   });
+}
+
+/**
+ * Convert a sourceItem to a simple download object by composing filename and urlItems
+ * @param  {Object} sourceItem
+ * @return {Object}
+ */
+function convertSourceItemToDownloadItem(sourceItem) {
+  return {
+    filename: filenameUtility.composeFileName([sourceItem.author, sourceItem.title], 'pdf'),
+    url: sourceItem.url
+  }
 }
 
 module.exports = {
@@ -64,22 +77,16 @@ module.exports = {
    * @return {void}          [description]
    */
   convertBibtexJsonToPdf: function(urlItems) {
-    var tempFileName;
-    var that = this;
+    var urlItemsCount = urlItems.length;
     console.log(infoMessage('Start converting, this may take some time ...'));
-
-    var operations = urlItems.map(function(url, index) {
-      tempFileName = filenameUtility.composeFileName([urlItems[index].author, urlItems[index].title], 'pdf');
-      console.log(infoMessage('Processing item %s out of %s'), index + 1, urlItems.length);
-      if(filenameUtility.isPdfFile(urlItems[index].url)) {
-        console.log('Start downloading ' + urlItems[index].title);
-        return downloadFile(urlItems[index].url, tempFileName);
+    var operations = urlItems
+    .map(convertSourceItemToDownloadItem)
+    .map(function(item, index) {
+      console.log(infoMessage('Processing item %s out of %s'), index + 1, urlItemsCount);
+      if(filenameUtility.isPdfFile(item.url)) {
+        return downloadFile(item.url, item.filename);
       } else {
-        console.log('Start converting ' + urlItems[index].title)
-        return convertWebpageToPdf(urlItems[index].url, tempFileName)
-        .then(function(filename) {
-          console.log(`Successfully downloaded ${filename}`);
-        });
+        return convertWebpageToPdf(item.url, item.filename);
       }
     });
 
